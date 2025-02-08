@@ -44,11 +44,22 @@ def classify_number(number):
 
 @app.route('/api/classify-number', methods=['GET'])
 def api_classify():
-    number = request.args.get('number')
-    if number is None:
-      return jsonify({"error": "Number parameter is required"}), 400
-    return classify_number(number)
+    number = request.args.get('number')  # Extract number from request arguments
 
+    if number is None:  # Check if number is missing
+        return jsonify({"error": "Number parameter is required"}), 400
+
+    try:
+        num = int(number)  # Convert to integer (handle potential ValueError)
+    except ValueError:
+        return jsonify({"number": number, "error": True}), 400
+
+    try:
+        response, status_code = classify_number(num)  # Call with the number
+        return response, status_code  # Return the response from classify_number()
+    except Exception as e:
+        print(f"An error occurred: {e}")  # Log the error (important!)
+        return jsonify({"error": "An internal server error occurred."}), 500  # Return a 500 error
 @app.after_request
 def add_cors_headers(response):  # CORS handling
     response.headers.add('Access-Control-Allow-Origin', '*') # Or restrict to specific origins
